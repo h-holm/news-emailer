@@ -105,9 +105,8 @@ echo "-------------------------------------------------------------"
 echo "Starting script <send_news_over_email.sh> at $(date)."
 echo "Considering the following news sources: ${SOURCES[@]}."
 
-timestamp=$(date +%Y-%m-%d-%H%M)
+todays_date=$(date '+%Y-%m-%d')
 
-attachments=()
 for source in "${SOURCES[@]}"; do
   echo
   echo "${source}:"
@@ -115,16 +114,12 @@ for source in "${SOURCES[@]}"; do
   file_to_attach=$(find "$FROM_DIR" -name "*$source*" -mtime -1 -type f -print)
   echo "- ${file_to_attach}"
   if [ -f "$file_to_attach" ]; then
-    echo "- Attaching news from $source to the attachment string..."
-    attachments+=("$file_to_attach")
+    echo
+    echo "mutt -s \"${todays_date} ${source}\" -a ${source} -- ${RECIPIENT} < \"${BODY_FILE}\""
+    echo
+    mutt -s "${todays_date} ${source}" -a "${source}" -- ${RECIPIENT} < "${BODY_FILE}"
   fi
 done
-
-todays_date=$(date '+%Y-%m-%d')
-echo
-echo "Using command 'mutt -s \"${todays_date} News\" -a ${attachments[@]} -- ${RECIPIENT} < \"${BODY_FILE}\"'"
-echo
-mutt -s "${todays_date} News" -a "${attachments[@]}" -- ${RECIPIENT} < "${BODY_FILE}"
 
 echo
 echo "Script <send_news_over_email.sh> completed at $(date)."
