@@ -7,6 +7,5 @@ See [mutt-setup gist](https://gist.github.com/h-holm/b023df59207926511f4399d6342
 Run the [send_news_over_email.sh](./send_news_over_email.sh) script with the `--help` flag for details on how to use the script:
 
 ```shell
-$ chmod u+x send_news_over_email.sh
 $ ./send_news_over_email.sh --help
 ```
