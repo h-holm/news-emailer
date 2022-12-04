@@ -115,9 +115,9 @@ for source in "${SOURCES[@]}"; do
   echo "- ${file_to_attach}"
   if [ -f "$file_to_attach" ]; then
     echo
-    echo "mutt -s \"${todays_date} ${source}\" -a ${source} -- ${RECIPIENT} < \"${BODY_FILE}\""
+    echo "mutt -s \"${todays_date} ${source}\" -a ${file_to_attach} -- ${RECIPIENT} < \"${BODY_FILE}\""
     echo
-    mutt -s "${todays_date} ${source}" -a "${source}" -- ${RECIPIENT} < "${BODY_FILE}"
+    mutt -s "${todays_date} ${source}" -a "${file_to_attach}" -- ${RECIPIENT} < "${BODY_FILE}"
   fi
 done
 
