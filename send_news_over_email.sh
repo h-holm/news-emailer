@@ -10,7 +10,7 @@ set -e
 PROGRAM_NAME="send_news_over_email.sh"
 
 function usage {
-  echo "This script sends files as email attachments using `mutt` to the"\
+  echo "This script sends files as email attachments using 'mutt' to the"\
     "recipient specified by the --recipient flag. News files in the"\
     "--from-dir are considered, as long their filename align with the sources"\
     "specified in the line-by-line --sources-file. The --body-file specifies"\
@@ -27,7 +27,7 @@ function usage {
 
 SHORT_OPTS=r:,s:,b:,f:,h
 LONG_OPTS=recipient:,sources-file:,body-file:,from-dir:,help
-OPTS=$(getopt --options $SHORT_OPTS --longoptions $LONG_OPTS --name fetch_news.sh -- "$@")
+OPTS=$(getopt --options $SHORT_OPTS --longoptions $LONG_OPTS --name $PROGRAM_NAME -- "$@")
 
 # Returns the count of provided args that are in the short or long options.
 VALID_ARGUMENTS=$#
