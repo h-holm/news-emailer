@@ -1,27 +1,27 @@
 #!/usr/bin/env bash
-# Script to send scraped news files as email attachments (using Mutt) to the
-# recipient specified by the --recipient flag. News files in the --from-dir
-# are considered, as long their filename align with the sources specified in
-# the line-by-line --sources-file. The --body-file specifies the path to a
-# text file containing the email body.
+# Script to send scraped news EPUBs as email attachments using Mutt to the recipient
+# specified by the `--recipient` flag. News files in the `--from-dir` are considered,
+# as long their filenames align with the sources specified in the line-by-line
+# `--sources-file`. The `--body-file` specifies the path to a text file containing the
+# email body to use.
 
 set -e
 
 PROGRAM_NAME="send_news_over_email.sh"
 
 function usage {
-  echo "This script sends files as email attachments using 'mutt' to the"\
-    "recipient specified by the --recipient flag. News files in the"\
-    "--from-dir are considered, as long their filename align with the sources"\
-    "specified in the line-by-line --sources-file. The --body-file specifies"\
-    "the path to a text file containing the email body."
+  echo 'This script sends files as email attachments using `mutt` to the recipient' \
+    'specified by the `--recipient` flag. News files in the `--from-dir` are' \
+    "considered, as long their filenames align with the sources specified in the" \
+    'line-by-line `--sources-file`. The `--body-file` specifies the path to a text' \
+    "file containing the email body to use."
   echo
   echo "Usage: $PROGRAM_NAME [ -r | --recipient ] [ -s | --sources-file ]"\
     "[ -b | --body-file ] [ -f | --from-dir ]"
   echo "  -r | --recipient      Email address to send email(s) to."
-  echo "  -s | --sources-file   Path to line-by-line file of news sources."
-  echo "  -b | --body-file      Path to file containing the email body."
-  echo "  -f | --from-dir       Path to directory containing news epubs."
+  echo "  -s | --sources-file   Path to line-by-line file of in-scope news sources."
+  echo "  -b | --body-file      Path to file containing the email body to use."
+  echo "  -f | --from-dir       Path to directory containing news EPUBs."
   echo "  -h | --help           Display this help message."
 }
 
@@ -75,41 +75,41 @@ while [ $# -ge 1 ]; do
 done
 
 if [ ! command -v mutt &> /dev/null ]; then
-  echo "The 'mutt' command is required by this script but could not be found."\
-    "Please install and configure Mutt before running this script."
+  echo 'The `mutt` command-line utility is required by this script but could not be' \
+    "found. Please install and configure Mutt before running this script."
   exit 2
 fi
 
-if [ ! -f "$SOURCES_FILE" ]; then
-  echo "No file found at value specified by --sources-file. Please provide"\
-    "the path to an existing file. Exiting..."
+if [ ! -f "${SOURCES_FILE}" ]; then
+  echo "No valid \`--sources-file\` found at '${SOURCES_FILE}'. Please provide the" \
+    "path to an existing file. Exiting..."
   exit 2
 else
-  readarray -t SOURCES < $SOURCES_FILE
+  readarray -t SOURCES < ${SOURCES_FILE}
   if [ ${#SOURCES[@]} -eq 0 ]; then
-    echo "The provided --sources-file is empty. Please specify the path to a"\
-      "line-by-line file of valid Calibre news sources. Exiting..."
+    echo "The provided '${SOURCES_FILE}' file appears to be empty. Please specify" \
+      "the path to a line-by-line file of valid Calibre news sources. Exiting..."
     exit 2
   fi
 fi
 
-if [ ! -f "$BODY_FILE" ]; then
-  echo "No file found at value specified by --body-file. Please provide the"\
-    "path to an existing file. Exiting..."
+if [ ! -f "${BODY_FILE}" ]; then
+  echo "No valid \`--body-file\` found at '${BODY_FILE}'. Please provide the path to" \
+    "an existing file. Exiting..."
   exit 2
 fi
 
-if [ ! -d "$FROM_DIR" ]; then
-  echo "No directory found at value specified by --from-dir. Please provide"\
-    "the path to an existing directory. Exiting..."
+if [ ! -d "${FROM_DIR}" ]; then
+  echo "No valid \`--from-dir\` directory found at '${FROM_DIR}'. Please provide the" \
+    "path to an existing directory. Exiting..."
   exit 2
 fi
 
 # Check that the provided $RECIPIENT is a string on a valid email format.
 email_regex="^(([-a-zA-Z0-9\!#\$%\&\'*+/=?^_\`{\|}~]+|(\"([][,:;<>\&@a-zA-Z0-9\!#\$%\&\'*+/=?^_\`{\|}~-]|(\\\\[\\ \"]))+\"))\.)*([-a-zA-Z0-9\!#\$%\&\'*+/=?^_\`{\|}~]+|(\"([][,:;<>\&@a-zA-Z0-9\!#\$%\&\'*+/=?^_\`{\|}~-]|(\\\\[\\ \"]))+\"))@\w((-|\w)*\w)*\.(\w((-|\w)*\w)*\.)*\w{2,4}$"
-if ! [[ "$RECIPIENT" =~ $email_regex ]]; then
-  echo "The provided --recipient is not a string on a valid email format"\
-    "(name[.name]@domain.something)."
+if ! [[ "${RECIPIENT}" =~ $email_regex ]]; then
+  echo "'${RECIPIENT}' is not a valid \`--recipient\`! Please provide a string on a" \
+    "valid email format: (name[.name]@domain.something)."
   exit 2
 fi
 
@@ -122,10 +122,10 @@ todays_date=$(date '+%Y-%m-%d')
 for source in "${SOURCES[@]}"; do
   echo
   echo "${source}:"
-  echo "- find "$FROM_DIR" -name "*$source*" -mtime -1 -type f -print"
-  file_to_attach=$(find "$FROM_DIR" -name "*$source*" -mtime -1 -type f -print)
+  echo "- find "${FROM_DIR}" -name "*${source}*" -mtime -1 -type f -print"
+  file_to_attach=$(find "${FROM_DIR}" -name "*${source}*" -mtime -1 -type f -print)
   echo "- ${file_to_attach}"
-  if [ -f "$file_to_attach" ]; then
+  if [ -f "${file_to_attach}" ]; then
     echo
     echo "mutt -s \"${todays_date} ${source}\" -a ${file_to_attach} -- ${RECIPIENT} < \"${BODY_FILE}\""
     echo
