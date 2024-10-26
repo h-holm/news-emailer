@@ -8,6 +8,7 @@
 set -e
 
 PROGRAM_NAME="send_news_over_email.sh"
+MAX_NUM_DAYS="3"
 
 function usage {
   echo 'This script sends files as email attachments using `mutt` to the recipient' \
@@ -17,11 +18,13 @@ function usage {
     "file containing the email body to use."
   echo
   echo "Usage: $PROGRAM_NAME [ -r | --recipient ] [ -s | --sources-file ]"\
-    "[ -b | --body-file ] [ -f | --from-dir ]"
+    "[ -b | --body-file ] [ -f | --from-dir ] [ -m | --max-num-days ] [ -h | --help ]"
   echo "  -r | --recipient      Email address to send email(s) to."
   echo "  -s | --sources-file   Path to line-by-line file of in-scope news sources."
   echo "  -b | --body-file      Path to file containing the email body to use."
   echo "  -f | --from-dir       Path to directory containing news EPUBs."
+  echo "  -m | --max-num-days   Max allowed age (in days) of the EPUB files." \
+    "Default: $MAX_NUM_DAYS."
   echo "  -h | --help           Display this help message."
 }
 
@@ -55,6 +58,10 @@ while [ $# -ge 1 ]; do
       ;;
     -f | --from-dir )
       FROM_DIR="$2"
+      shift 2
+      ;;
+    -m | --max-num-days )
+      MAX_NUM_DAYS="$2"
       shift 2
       ;;
     -h | --help )
@@ -105,6 +112,11 @@ if [ ! -d "${FROM_DIR}" ]; then
   exit 2
 fi
 
+if [[ ! "${MAX_NUM_DAYS}" -gt 0 ]]; then
+  echo "The provided \`--max-num-days\` (${MAX_NUM_DAYS}) is not a positive integer." \
+    " Exiting..."
+  exit 2
+fi
 # Check that the provided $RECIPIENT is a string on a valid email format.
 email_regex="^(([-a-zA-Z0-9\!#\$%\&\'*+/=?^_\`{\|}~]+|(\"([][,:;<>\&@a-zA-Z0-9\!#\$%\&\'*+/=?^_\`{\|}~-]|(\\\\[\\ \"]))+\"))\.)*([-a-zA-Z0-9\!#\$%\&\'*+/=?^_\`{\|}~]+|(\"([][,:;<>\&@a-zA-Z0-9\!#\$%\&\'*+/=?^_\`{\|}~-]|(\\\\[\\ \"]))+\"))@\w((-|\w)*\w)*\.(\w((-|\w)*\w)*\.)*\w{2,4}$"
 if ! [[ "${RECIPIENT}" =~ $email_regex ]]; then
@@ -122,8 +134,8 @@ todays_date=$(date '+%Y-%m-%d')
 for source in "${SOURCES[@]}"; do
   echo
   echo "${source}:"
-  echo "- find "${FROM_DIR}" -name "*${source}*" -mtime -1 -type f -print"
-  file_to_attach=$(find "${FROM_DIR}" -name "*${source}*" -mtime -1 -type f -print)
+  echo "- find "${FROM_DIR}" -name "*${source}*" -mtime -"${MAX_NUM_DAYS}" -type f -print"
+  file_to_attach=$(find "${FROM_DIR}" -name "*${source}*" -mtime -"${MAX_NUM_DAYS}" -type f -print)
   echo "- ${file_to_attach}"
   if [ -f "${file_to_attach}" ]; then
     echo
